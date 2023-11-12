@@ -18,18 +18,44 @@ class DentalinkClient:
         self._session = session
         self._url = url
 
-    def _make_uri(
+    def __make_uri(
         self, endpoint: str, query: Union[dict[str, Any], None] = None
     ) -> str:
         if not query or len(query) == 0:
             return self._url + endpoint
 
-        return (
-            self._url
-            + endpoint
-            + "?q="
-            + urllib.parse.quote(json.dumps(query), safe="@#$&()*!+=:;,?/'")
-        )
+        # Al especificar `safe`, el método `quote` se comporta igual que `encodeURI` de Javascript
+        # Que es lo usado en los ejemplos de la documentación de la API
+        # Ver https://api.dentalink.healthatom.com/docs/ donde en los ejemplos se usa `encodeURI`
+        # Y revisar https://developer.mozilla.org/es/docs/Web/JavaScript/Reference/Global_Objects/encodeURI#descripci%C3%B3n
+        # Donde se especifica los carácteres omitidos.
+        encoded = urllib.parse.quote(json.dumps(query), safe="@#$&()*!+=:;,?/'")
+
+        return self._url + endpoint + "?q=" + encoded
+
+    def _request(
+        self,
+        method: str,
+        endpoint: str,
+        query: Union[DentalinkQuery, None] = None,
+        data: Union[dict[str, Union[str, int]], None] = None,
+    ):
+        uri = self.__make_uri(endpoint, query=query.parse() if query else None)
+        response = self._session.request(method, uri, json=data)
+
+        if response.status_code != 200:
+            try:
+                parsed = response.json()
+            except requests.exceptions.JSONDecodeError:
+                raise DentalinkClientHTTPException(
+                    code=response.status_code,
+                    message=f"Error inesperado: {response.text}",
+                )
+            raise DentalinkClientHTTPException(
+                code=response.status_code, message=parsed["error"]["message"]
+            )
+
+        return response.json()
 
     def obtener_citas(
         self,
@@ -49,42 +75,70 @@ class DentalinkClient:
             .eq(id_sucursal)
             .field("id_estado")
             .eq(id_estado)
-            .parse()
         )
 
-        uri = self._make_uri(endpoint, q)
-        response = self._session.get(uri)
+        return self._request("GET", endpoint, q)
 
-        if response.status_code != 200:
-            try:
-                parsed = response.json()
-            except requests.exceptions.JSONDecodeError:
-                raise DentalinkClientHTTPException(
-                    code=response.status_code,
-                    message=f"Error inesperado: {response.text}",
-                )
-            raise DentalinkClientHTTPException(
-                code=response.status_code, message=parsed["error"]["message"]
-            )
+    def obtener_estados_de_cita(
+        self,
+        *,
+        nombre: Union[str, None] = None,
+        reservado: Union[bool, None] = None,
+        anulacion: Union[bool, None] = None,
+        uso_interno: Union[bool, None] = None,
+        habilitado: Union[bool, None] = None,
+    ):
+        endpoint = "/citas/estados"
+        q = (
+            DentalinkQuery("nombre")
+            .eq(nombre)
+            .field("reservado")
+            .eq(reservado)
+            .field("anulacion")
+            .eq(anulacion)
+            .field("uso_interno")
+            .eq(uso_interno)
+            .field("habilitado")
+            .eq(habilitado)
+        )
 
-        return response.json()
+        return self._request("GET", endpoint, query=q)
 
-    def cambiar_estado_de_cita(self, id_cita: int, *, id_estado: int):
+    def obtener_sucursales(
+        self, *, nombre: Union[str, None] = None, habilitada: Union[bool, None] = None
+    ):
+        endpoint = "/sucursales"
+        q = DentalinkQuery("nombre").eq(nombre).field("habilitada").eq(habilitada)
+
+        return self._request("GET", endpoint, query=q)
+
+    def obtener_cita_segun_id(self, id_cita: int):
         endpoint = f"/citas/{id_cita}"
-        uri = self._make_uri(endpoint)
 
-        response = self._session.put(uri, json={"id_estado": id_estado})
+        return self._request("GET", endpoint)
 
-        if response.status_code != 200:
-            try:
-                parsed = response.json()
-            except requests.exceptions.JSONDecodeError:
-                raise DentalinkClientHTTPException(
-                    code=response.status_code,
-                    message=f"Error inesperado: {response.text}",
-                )
-            raise DentalinkClientHTTPException(
-                code=response.status_code, message=parsed["error"]["message"]
-            )
+    def actualizar_cita_segun_id(
+        self,
+        id_cita: int,
+        *,
+        duracion: Union[int, None] = None,
+        id_estado: Union[int, None] = None,
+        comentarios: Union[str, None] = None,
+        flag_notificar_anulacion: Union[bool, None] = None,
+    ):
+        endpoint = f"/citas/{id_cita}"
+        data = {}
 
-        return response.json()
+        if duracion:
+            data["duracion"] = duracion
+
+        if id_estado:
+            data["id_estado"] = id_estado
+
+        if comentarios:
+            data["comentarios"] = comentarios
+
+        if flag_notificar_anulacion:
+            data["flag_notificar_anulacion"] = True
+
+        return self._request("PUT", endpoint, data=data)
