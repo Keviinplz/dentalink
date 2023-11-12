@@ -29,6 +29,25 @@ class DentalinkQuery:
         self._last_field = field
         self._query[field] = []
 
+    def _add_filter(
+        self,
+        name: str,
+        value: Union[int, float, datetime, bool, str, None] = None,
+        dt_format: str = "%Y-%m-%d",
+    ) -> "DentalinkQuery":
+        if self._last_field is None:
+            raise DentalinkClientQueryError(
+                message="Debes establecer un campo usando .field() antes de agregar un filtro"
+            )
+
+        if value is None:
+            return self
+
+        self._query[self._last_field].append(
+            {name: self._cast_value_to_str(value, dt_format)}
+        )
+        return self
+
     def field(self, field_name: str) -> "DentalinkQuery":
         if self._last_field == field_name:
             return self
@@ -41,124 +60,47 @@ class DentalinkQuery:
         value: Union[int, float, datetime, bool, str, None] = None,
         dt_format: str = "%Y-%m-%d",
     ) -> "DentalinkQuery":
-        if self._last_field is None:
-            raise DentalinkClientQueryError(
-                message="Debes establecer un campo usando .field() antes de agregar un filtro"
-            )
-
-        if value is None:
-            return self
-
-        self._query[self._last_field].append(
-            {"eq": self._cast_value_to_str(value, dt_format)}
-        )
-        return self
+        return self._add_filter("eq", value, dt_format)
 
     def neq(
         self,
         value: Union[int, float, datetime, bool, str, None] = None,
         dt_format: str = "%Y-%m-%d",
     ) -> "DentalinkQuery":
-        if self._last_field is None:
-            raise DentalinkClientQueryError(
-                message="Debes establecer un campo usando .field() antes de agregar un filtro"
-            )
-
-        if value is None:
-            return self
-
-        self._query[self._last_field].append(
-            {"neq": self._cast_value_to_str(value, dt_format)}
-        )
-        return self
+        return self._add_filter("neq", value, dt_format)
 
     def gt(
         self,
         value: Union[int, float, datetime, None] = None,
         dt_format: str = "%Y-%m-%d",
     ) -> "DentalinkQuery":
-        if self._last_field is None:
-            raise DentalinkClientQueryError(
-                message="Debes establecer un campo usando .field() antes de agregar un filtro"
-            )
-
-        if value is None:
-            return self
-
-        self._query[self._last_field].append(
-            {"gt": self._cast_value_to_str(value, dt_format)}
-        )
-        return self
+        return self._add_filter("gt", value, dt_format)
 
     def gte(
         self,
         value: Union[int, float, datetime, None] = None,
         dt_format: str = "%Y-%m-%d",
     ) -> "DentalinkQuery":
-        if self._last_field is None:
-            raise DentalinkClientQueryError(
-                message="Debes establecer un campo usando .field() antes de agregar un filtro"
-            )
-
-        if value is None:
-            return self
-
-        self._query[self._last_field].append(
-            {"gte": self._cast_value_to_str(value, dt_format)}
-        )
-        return self
+        return self._add_filter("gte", value, dt_format)
 
     def lt(
         self,
         value: Union[int, float, datetime, None] = None,
         dt_format: str = "%Y-%m-%d",
     ) -> "DentalinkQuery":
-        if self._last_field is None:
-            raise DentalinkClientQueryError(
-                message="Debes establecer un campo usando .field() antes de agregar un filtro"
-            )
-
-        if value is None:
-            return self
-
-        self._query[self._last_field].append(
-            {"lt": self._cast_value_to_str(value, dt_format)}
-        )
-        return self
+        return self._add_filter("lt", value, dt_format)
 
     def lte(
         self,
         value: Union[int, float, datetime, None] = None,
         dt_format: str = "%Y-%m-%d",
     ) -> "DentalinkQuery":
-        if self._last_field is None:
-            raise DentalinkClientQueryError(
-                message="Debes establecer un campo usando .field() antes de agregar un filtro"
-            )
-
-        if value is None:
-            return self
-
-        self._query[self._last_field].append(
-            {"lte": self._cast_value_to_str(value, dt_format)}
-        )
-        return self
+        return self._add_filter("lte", value, dt_format)
 
     def lk(
         self, value: Union[datetime, None] = None, dt_format: str = "%Y-%m-%d"
     ) -> "DentalinkQuery":
-        if self._last_field is None:
-            raise DentalinkClientQueryError(
-                message="Debes establecer un campo usando .field() antes de agregar un filtro"
-            )
-
-        if value is None:
-            return self
-
-        self._query[self._last_field].append(
-            {"lk": self._cast_value_to_str(value, dt_format)}
-        )
-        return self
+        return self._add_filter("lk", value, dt_format)
 
     def parse(self) -> dict[str, Union[dict[str, str], List[dict[str, str]]]]:
         if len(self._query) == 0:
