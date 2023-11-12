@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "dentalink"
+version = "0.1.0"
+description = ""
+authors = ["Keviinplz <kevin.pinochet@ug.uchile.cl>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "2.31.0"
+
+
+[tool.poetry.group.dev.dependencies]
+types-requests = "2.31.0.10"
+mypy = "1.7.0"
+pytest = "7.4.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
