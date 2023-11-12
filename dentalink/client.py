@@ -9,6 +9,9 @@ from dentalink.exceptions import (
     DentalinkClientHTTPException,
 )
 from dentalink.query import DentalinkQuery
+from dentalink.schemas.api import DentalinkResponse
+from dentalink.schemas.citas import DentalinkCitaResponse, DentalinkEstadoCitaResponse
+from dentalink.schemas.sucursales import DentalinkSucursalResponse
 
 
 class DentalinkClient:
@@ -37,9 +40,10 @@ class DentalinkClient:
         self,
         method: str,
         endpoint: str,
+        *,
         query: Union[DentalinkQuery, None] = None,
         data: Union[dict[str, Union[str, int]], None] = None,
-    ):
+    ) -> dict[str, Any]:
         uri = self.__make_uri(endpoint, query=query.parse() if query else None)
         response = self._session.request(method, uri, json=data)
 
@@ -77,7 +81,12 @@ class DentalinkClient:
             .eq(id_estado)
         )
 
-        return self._request("GET", endpoint, q)
+        response = self._request("GET", endpoint, query=q)
+
+        return DentalinkResponse(
+            links=response.get("links"),
+            data=[DentalinkCitaResponse(**data) for data in response["data"]],
+        )
 
     def obtener_estados_de_cita(
         self,
@@ -102,7 +111,12 @@ class DentalinkClient:
             .eq(habilitado)
         )
 
-        return self._request("GET", endpoint, query=q)
+        response = self._request("GET", endpoint, query=q)
+
+        return DentalinkResponse(
+            links=response.get("links"),
+            data=[DentalinkEstadoCitaResponse(**data) for data in response["data"]],
+        )
 
     def obtener_sucursales(
         self, *, nombre: Union[str, None] = None, habilitada: Union[bool, None] = None
@@ -110,12 +124,22 @@ class DentalinkClient:
         endpoint = "/sucursales"
         q = DentalinkQuery("nombre").eq(nombre).field("habilitada").eq(habilitada)
 
-        return self._request("GET", endpoint, query=q)
+        response = self._request("GET", endpoint, query=q)
+
+        return DentalinkResponse(
+            links=response.get("links"),
+            data=[DentalinkSucursalResponse(**data) for data in response["data"]],
+        )
 
     def obtener_cita_segun_id(self, id_cita: int):
         endpoint = f"/citas/{id_cita}"
 
-        return self._request("GET", endpoint)
+        response = self._request("GET", endpoint)
+
+        return DentalinkResponse(
+            links=response.get("links"),
+            data=DentalinkCitaResponse(**response["data"]),
+        )
 
     def actualizar_cita_segun_id(
         self,
@@ -141,4 +165,9 @@ class DentalinkClient:
         if flag_notificar_anulacion:
             data["flag_notificar_anulacion"] = True
 
-        return self._request("PUT", endpoint, data=data)
+        response = self._request("PUT", endpoint, data=data)
+
+        return DentalinkResponse(
+            links=response.get("links"),
+            data=DentalinkCitaResponse(**response["data"]),
+        )
