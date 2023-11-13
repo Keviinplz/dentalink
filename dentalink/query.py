@@ -23,8 +23,8 @@ class DentalinkQueryFactory:
             .field('now').eq(datetime(2023, 11, 12), dt_format='%Y-%m-%d')
             .parse())
         {
-            "foo": { "eq": 3 },
-            "bar": [{"gt": 1}, {"lt": 3}],
+            "foo": { "eq": "3" },
+            "bar": [{ "gt": "1" }, { "lt": "3" }],
             "now": { "eq": "2023-11-12" }
         }
     ```
@@ -218,7 +218,7 @@ class DentalinkQueryFactory:
         return self._add_filter("lte", value, dt_format)
 
     def lk(
-        self, value: Union[datetime, None] = None, dt_format: str = "%Y-%m-%d"
+        self, value: Union[datetime, str, None] = None, dt_format: str = "%Y-%m-%d"
     ) -> "DentalinkQueryFactory":
         """Implementación del operador `lk` (ver: https://api.dentalink.healthatom.com/docs/#filtros-y-cursores)
 
