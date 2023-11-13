@@ -6,8 +6,8 @@ from dentalink.exceptions import (
 )
 
 
-class DentalinkQuery:
-    """Construye un filtro para la API de Dentalink
+class DentalinkQueryFactory:
+    """Construye filtros para la API de Dentalink (ver: https://api.dentalink.healthatom.com/docs/#filtros-y-cursores)
 
     La API define una mecánica de filtros para utilizar en las peticiones,
     dicho filtros constan de un diccionario de campos que contienen operaciones.
@@ -18,7 +18,7 @@ class DentalinkQuery:
 
     Módo de uso
     ```py
-        >>> (DentalinkQuery().field('foo').eq(3)
+        >>> (DentalinkQueryFactory().field('foo').eq(3)
             .field('bar').gt(1).lt(3)
             .field('now').eq(datetime(2023, 11, 12), dt_format='%Y-%m-%d')
             .parse())
@@ -85,7 +85,7 @@ class DentalinkQuery:
         name: str,
         value: Union[int, float, datetime, bool, str, None] = None,
         dt_format: str = "%Y-%m-%d",
-    ) -> "DentalinkQuery":
+    ) -> "DentalinkQueryFactory":
         """Agrega un nuevo filtro
 
         Parámetros:
@@ -112,7 +112,7 @@ class DentalinkQuery:
         )
         return self
 
-    def field(self, field_name: str) -> "DentalinkQuery":
+    def field(self, field_name: str) -> "DentalinkQueryFactory":
         """Agrega un nuevo campo
 
         Parámetros:
@@ -131,7 +131,7 @@ class DentalinkQuery:
         self,
         value: Union[int, float, datetime, bool, str, None] = None,
         dt_format: str = "%Y-%m-%d",
-    ) -> "DentalinkQuery":
+    ) -> "DentalinkQueryFactory":
         """Implementación del operador `eq` (ver: https://api.dentalink.healthatom.com/docs/#filtros-y-cursores)
 
         Retorna:
@@ -146,7 +146,7 @@ class DentalinkQuery:
         self,
         value: Union[int, float, datetime, bool, str, None] = None,
         dt_format: str = "%Y-%m-%d",
-    ) -> "DentalinkQuery":
+    ) -> "DentalinkQueryFactory":
         """Implementación del operador `neq` (ver: https://api.dentalink.healthatom.com/docs/#filtros-y-cursores)
 
         Retorna:
@@ -161,7 +161,7 @@ class DentalinkQuery:
         self,
         value: Union[int, float, datetime, None] = None,
         dt_format: str = "%Y-%m-%d",
-    ) -> "DentalinkQuery":
+    ) -> "DentalinkQueryFactory":
         """Implementación del operador `gt` (ver: https://api.dentalink.healthatom.com/docs/#filtros-y-cursores)
 
         Retorna:
@@ -176,7 +176,7 @@ class DentalinkQuery:
         self,
         value: Union[int, float, datetime, None] = None,
         dt_format: str = "%Y-%m-%d",
-    ) -> "DentalinkQuery":
+    ) -> "DentalinkQueryFactory":
         """Implementación del operador `gte` (ver: https://api.dentalink.healthatom.com/docs/#filtros-y-cursores)
 
         Retorna:
@@ -191,7 +191,7 @@ class DentalinkQuery:
         self,
         value: Union[int, float, datetime, None] = None,
         dt_format: str = "%Y-%m-%d",
-    ) -> "DentalinkQuery":
+    ) -> "DentalinkQueryFactory":
         """Implementación del operador `lt` (ver: https://api.dentalink.healthatom.com/docs/#filtros-y-cursores)
 
         Retorna:
@@ -206,7 +206,7 @@ class DentalinkQuery:
         self,
         value: Union[int, float, datetime, None] = None,
         dt_format: str = "%Y-%m-%d",
-    ) -> "DentalinkQuery":
+    ) -> "DentalinkQueryFactory":
         """Implementación del operador `lte` (ver: https://api.dentalink.healthatom.com/docs/#filtros-y-cursores)
 
         Retorna:
@@ -219,7 +219,7 @@ class DentalinkQuery:
 
     def lk(
         self, value: Union[datetime, None] = None, dt_format: str = "%Y-%m-%d"
-    ) -> "DentalinkQuery":
+    ) -> "DentalinkQueryFactory":
         """Implementación del operador `lk` (ver: https://api.dentalink.healthatom.com/docs/#filtros-y-cursores)
 
         Retorna:

@@ -8,7 +8,7 @@ import requests
 from dentalink.exceptions import (
     DentalinkClientHTTPException,
 )
-from dentalink.query import DentalinkQuery
+from dentalink.query import DentalinkQueryFactory
 from dentalink.schemas.api import DentalinkResponse
 from dentalink.schemas.citas import DentalinkCitaResponse, DentalinkEstadoCitaResponse
 from dentalink.schemas.sucursales import DentalinkSucursalResponse
@@ -65,7 +65,7 @@ class DentalinkClient:
         method: str,
         endpoint: str,
         *,
-        query: Union[DentalinkQuery, None] = None,
+        query: Union[DentalinkQueryFactory, None] = None,
         data: Union[dict[str, Union[str, int]], None] = None,
     ) -> dict[str, Any]:
         """Realiza una petición a la API
@@ -128,7 +128,7 @@ class DentalinkClient:
         endpoint = "/citas"
 
         q = (
-            DentalinkQuery("fecha")
+            DentalinkQueryFactory("fecha")
             .gte(start_date)
             .lte(end_date)
             .field("id_sucursal")
@@ -171,7 +171,7 @@ class DentalinkClient:
         """
         endpoint = "/citas/estados"
         q = (
-            DentalinkQuery("nombre")
+            DentalinkQueryFactory("nombre")
             .eq(nombre)
             .field("reservado")
             .eq(reservado)
@@ -208,7 +208,12 @@ class DentalinkClient:
         """
 
         endpoint = "/sucursales"
-        q = DentalinkQuery("nombre").eq(nombre).field("habilitada").eq(habilitada)
+        q = (
+            DentalinkQueryFactory("nombre")
+            .eq(nombre)
+            .field("habilitada")
+            .eq(habilitada)
+        )
 
         response = self._request("GET", endpoint, query=q)
 
