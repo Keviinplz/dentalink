@@ -23,6 +23,17 @@ Cliente escrito en python que mediante la librería `requests` realiza peticione
     - Obtención de todas las sucursales con filtros.
     - Obtención de todos los estados de cita con filtros.
 
+## Instalación
+Usando poetry:
+```bash
+poetry add git+https://github.com/Keviinplz/dentalink.git
+```
+
+O en su defecto, usando pip:
+```bash
+pip install git+https://github.com/Keviinplz/dentalink.git
+```
+
 # Ejemplos de uso
 
 **Inicialización**
@@ -111,6 +122,7 @@ DentalinkResponse(
 )
 """
 ```
+_Más información en https://github.com/Keviinplz/dentalink/blob/main/dentalink/client.py#L247_
 
 **Obtención de sucursales**
 ```py
@@ -148,6 +160,7 @@ DentalinkResponse(
 )
 """
 ```
+_Más información en https://github.com/Keviinplz/dentalink/blob/main/dentalink/client.py#L193_
 
 **Obtención de estados de cita**
 ```py
@@ -185,3 +198,4 @@ DentalinkResponse(
 )
 """
 ```
+_Más información en https://github.com/Keviinplz/dentalink/blob/main/dentalink/client.py#L147_
